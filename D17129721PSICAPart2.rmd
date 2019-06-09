@@ -1,0 +1,660 @@
+---
+title: "PSI CA Part 2"
+R Packages: <<pastecs, dplyr, ggplot2, psych, pastecs, semtools, car, pander>>
+R Version: <<3.5.1>>
+output:
+  pdf_document: default
+  html_document: default
+Student Number: <<D17129721>>
+Student Name: <<Ashis Sahu>>
+Programme Code: <<DT228A>>
+Option: <<A>>
+---
+
+#Knitr options
+```{r setup, Knitr option setup}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+#Title : Factors affecting satisfaction of sleep
+
+#Abstract
+There can be various factors affecting ones satisfaction of sleep, it can be the quality of sleep, work at night shift, fit rate of an individual or certain habits such as drinking alcohol, smoking, etc. Though there can be various factors affecting sleep, we have have taken five varaibles from sleep data set which has 271 records which was collected from a survey using the sleep questionnaire. The main constraint varaible in this research is the satisfaction in sleep which is a scale varaible range from 1 to 10. Normality test has been done and hypothesis testing and reporting  has been done with respect to the other factors or varaibles under consideration such as qualslp, alchohol, fitrate, smoke, and  niteshft. The main constraint varaible is satsleep ( satisfaction in sleep ) which is a scale varaible range from 1 to 10. The varaible qualslp, alchohol, smokenum, fitrate are scale varibles in the data set whose normality has been done if the skewness and kurtosis falls under the desired value of +/-2. The number of outliers in each varaibles has been found for every single varaible. The hypothesis testing is done with qualslp, alchohol, fitrate, smoke, and  niteshft with respect to satsleep, to find out the correlation and difference in the hypothesis testing. Spearman correlation are used for ordinal varibles for satsleep and qualslp,  as both were ordinal varaibles. T-Test has been used for testing satsleep and niteshft as well as smoke as niteshft and smoke is categorical varible. Pearson correlation is done with alcohol and fitrate as both were continious varibles. The statistical tests have been produced with respect to each variable type and reported after each test.
+
+#Libraries used
+```{r Library used}
+library(pastecs)
+library(dplyr)
+library(ggplot2) #For creating histograms with more detail than plot
+library(psych) # Some useful descriptive functions
+library(pastecs)#Some useful descriptive functions
+library(semTools) #For skewness and kurtosis
+library(car) # For Levene's test for homogeneity of variance 
+library(foreign)
+library(MASS)
+library(Hmisc)
+library(reshape2)
+library(AutoModel)
+library(Epi)
+library(rcompanion)
+library(stargazer)
+library(ppcor)
+library(caret)
+library(car)
+
+```
+
+#Loading the sleep dataset
+```{r Read Sleep dataset}
+#Reading the dataset
+sleep <- read.csv("sleep5ED.csv")
+#Setting the column names to be that used in the dataset
+colnames(sleep) <- tolower(colnames(sleep))
+
+```
+
+
+#1. INTRODUCTION
+
+This markdown file uses the sleep5ED dataset which was collected by a survey on a questionnaire on sleep. This survey was done over 271 people on how satisfied they are from their sleep, quality of sleep, Rating of stress over last month,Medication needed to help them sleep, Do they have a problem with your sleep problem, impact of sleep on mood, impact of sleep problem on energy level, impact of sleep problem on memory, impact of sleep problem on life sat, impact of sleep problem on overall well-being, impact of sleep problem on relationships, etc.
+
+##1.1 Research question
+What are the factors and habits involving in satisfaction of sleep. A person's satisfaction in sleep could rely on various factors including quality of sleep, fitrate of the person, do they work in nite shift, drink alcohol or smoke. This analysis is concerned with a person's sleep with various related factors in one's life which has an impact on their sleep, the following conducted test is to find out, what are the major reason of trouble in sleeping or satisfaction in sleep. There various impact of sleep such as on mood and energy level, but we are only concerned what are all the factors involved in sarisfaction of sleep for a person.
+
+##1.2 Hypotheses
+The particular hypotheses to be investigated are:
+
+
+
+#2. METHODOLOGY
+
+## Variables of interest
+The variables of interest used in this research are shown below:
+
+##2.1 Quality of sleep
+
+Quality of sleep (m=`3.69`, sd=`1.14`, n=`268`) is represented by a ordinal variable in the sleep dataset which was obtained from the sleep  questionnaire. It conists of quality of sleep experienced by  respondent on a range of scores from 1 t0 6. The maximum quality of sleep a repondent can register is 6 and minimum of 1 score. Quality of sleep is the the predictor varaible in the  data set. Histogram of quality of sleep has been contructed and decriptive statistics has been presented. The main motive of the paper is to find the factors affecting satisfaction of sleep, the quality of sleep comes in as a factor of satisfaction of sleep.
+
+###Code for inspecting the variable
+
+```{R}
+#Descriptive statisics
+stat.desc(sleep$qualslp, basic=F)
+```
+```{r}
+#Histogram
+hist(sleep$qualsleep, main="Figure 1: Histogram of satsleep")
+
+```
+
+
+##2.2 Satisfaction in sleep
+
+Satisfaction of sleep (m=`5.54`, sd=`2.5`, n=`268`) is represented by a ordinal variable in the sleep dataset which was obtained from the sleep  questionnaire. It conists of satisfaction of sleep experienced by  respondent on a range of scores from 1 to 10. The maximum satisfaction of sleep a repondent can register is 10 and minimum of 1 score. Satisfaction of sleep is the the outciome varaible in the  data set. Histogram of satisfaction of sleep has been contructed and decriptive statistics has been presented. The main motive of the paper is to find the factors affecting satisfaction of sleep.
+
+###Code for inspecting the variable
+```{R}
+#Descriptive statisics
+stat.desc(sleep$satsleep, basic=F)
+```
+```{r}
+#Histogram
+hist(sleep$satsleep, main="Figure: Histogram of satsleep")
+```
+
+##2.3 Caffeine
+Caffeine (m=`2.94`, sd=`1.92`, n=`270`) is represented by a continoius variable in the sleep dataset which was obtained from the sleep  questionnaire. It conists of number of caffeine drink the respomdent consume each day.Number of caffeine drinks in the dataset ranges from  0 t0 10.Caffeine is the the predictor varaible in the  data set. Histogram of caffeine has been presented and decriptive statistics has been presented. Normality analysis has been also presented with finding the skew and kutosis. The main motive of the paper is to find the factors affecting satisfaction of sleep, number of caffeine drinks comes in as a factor of satisfaction of sleep.
+
+
+###Code for inspecting the variable
+
+```{r}
+#Descriptive statisics
+stat.desc(sleep$caffeine, basic=F)
+```
+```{r}
+#Histogram
+hist(sleep$caffeine, main="Figure: Histogram of caffeine")
+```
+
+```{r}
+#tables for satsleep
+table(sleep$caffeine)
+ 
+```
+
+```{r}
+#skewness and kurtosis from semTools with standard error 
+tpskew<-semTools::skew(sleep$caffeine)
+tpkurt<-semTools::kurtosis(sleep$caffeine)
+#We divide the skew statistic by the standard error to get the standardised score
+stdskew<-tpskew[1]/tpskew[2]
+stdkurt<-tpkurt[1]/tpkurt[2]
+stdskew
+```
+```{r}
+stdkurt
+```
+
+
+```{r}
+#Use dplyr filter to filter out the rows with a standardised value outsude the range
+outliers <- sleep %>% 
+  filter(scale(sleep$caffeine) >3.29 | scale(sleep$caffeine) < -3.29)
+
+#count them using dplyr summarize
+numoutliers<-outliers %>%
+summarize(count=n())
+fullcount<-sleep %>%
+summarize(count=n())
+
+numoutliers
+```
+
+```{r}
+fullcount
+```
+
+###Report of normality analysis
+Caffeine is represented by a continious variable in the dataset which was calculated from the sleep questionnaire. Inspection of the histogram and normality plot shows that the distribution does not conform for a normal distribution. 
+Inspection of standardized normal scores for skewness and kurtosis indicated that the skewness fall with an acceptable range of +/-2, (skewness of `0.67` SE=`1.51`, the kurtosis of `0.56` SE=`0.30`. Further inspection of the variable, showed that skew and kurtosis scores were inside the acceptable range. Caffeine will, therefore, be treated as a normal within this analysis (m=`2.94`, sd=`1.92`, n=`270`).
+
+
+```{r}
+#Create the histogram
+#Adjusting theme so that all plot titles after this will be centred and in bold
+theme_update(plot.title = element_text(hjust = 0.5, face="bold"))
+gg <- ggplot(sleep, aes(x=sleep$caffeine))
+
+#Change the label of the x axis
+gg <- gg + labs(x="caffeine drinks intakes")
+#manage binwidth and colours
+gg <- gg + geom_histogram(binwidth=2, colour="black", aes(y=..density.., fill=..count..))
+gg <- gg + scale_fill_gradient("Count", low="#DCDCDC", high="#7C7C7C")
+#adding a normal curve
+#use stat_function to compute a normalised score for each value of caffeine
+#pass the mean and standard deviation
+#use the na.rm parameter to say how missing values are handled
+gg <- gg + stat_function(fun=dnorm, color="red",args=list(mean=mean(sleep$caffeine, na.rm=TRUE), sd=sd(sleep$caffeine, na.rm=TRUE)))
+
+gg<-gg+ggtitle("Figure: Distribution caffeine drinks")
+#to display the graph request the contents of the variable be shown
+gg
+
+```
+
+
+##2.4 Healthrate
+Healthrate (m=`7.79`, sd=`1.57`, n=`267`) is represented by a ordinal variable in the sleep dataset which was obtained from the sleep  questionnaire. It conists of health rateof the  respondent on a range of scores from 1 to 10. The maximum health rate of a repondent can register is 10 and minimum of 1 score. Healthrate is the the predictor varaible in the  paper. Histogram of healthrate has been presented and decriptive statistics has been presented. The main motive of the paper is to find the factors affecting satisfaction of sleep, the health rate of individual comes in as a factor of satisfaction of sleep.
+
+```{r}
+#Descriptive statisics
+stat.desc(sleep$healthrate , basic=F)
+sum(!is.na(sleep$healthrate))
+```
+
+```{r}
+hist(sleep$healthrate, main ="Figure: Histogram of healthrate" )
+```
+
+
+##2.5 Fitrate
+Fitrate (m=`6.41`, sd=`1.71`, n=`266`) is represented by a ordinal variable in the sleep dataset which was obtained from the sleep  questionnaire. It conists of fit  rate of the  respondent on a range of scores from 1 to 10. The maximum fit rate of a repondent can register is 10 and minimum of 1 score. Fitrate is the the predictor varaible in the  paper. Histogram of fitrate has been presented and decriptive statistics has been presented. The main motive of the paper is to find the factors affecting satisfaction of sleep, the fit rate of individual comes in as a factor of satisfaction of sleep.
+
+```{r}
+#Descriptive statisics
+stat.desc(sleep$fitrate , basic=F)
+sum(!is.na(sleep$fitrate))
+```
+
+```{r}
+hist(sleep$fitrate, main ="Figure 7: Histogram of fitrate" )
+```
+##2.5 Alcohol
+
+Alcohol(m=`5.54`, sd=`2.5`, n=`271`) is represented as a continious variable in the dataset which was obtained from the sleep questionnaire. Inspection of standardized normal scores for skewness and kurtosis indicated that the skewness falls out of the acceptable range of +/-2, (skewness of `3.63` SE=`0.15`, the kurtosis of `22.4` SE=`0.30`. Further inspection of the variable using standardized scores showed that 0% standardised scores were outside the acceptable range of +/3.29.Terefore, Alcohol will not be undergone normality test and further it will not undergo hypothesis testing or included in model as factor affecting satisfaction of sleep. 
+
+###Code for inspecting the varible
+
+```{r}
+#Descriptive statisics
+stat.desc(sleep$alchohol, basic=F)
+```
+
+```{r}
+hist(sleep$alchohol, main="Figure 6: Histogram of Alcohol" )
+```
+
+```{R}
+#skewness and kurtosis from semTools with standard error 
+tpskew<-semTools::skew(sleep$alchohol)
+tpkurt<-semTools::kurtosis(sleep$alchohol)
+#We divide the skew statistic by the standard error to get the standardised score
+stdskew<-tpskew[1]/tpskew[2]
+stdkurt<-tpkurt[1]/tpkurt[2]
+stdskew
+```
+
+```{r}
+stdkurt
+```
+
+```{r}
+#Use dplyr filter to filter out the rows with a standardised value outsude the range
+outliers <- sleep %>% 
+  filter(scale(sleep$alchohol) >3.29 | scale(sleep$alchohol) < -3.29)
+
+#count them using dplyr summarize
+numoutliers<-outliers %>%
+summarize(count=n())
+fullcount<-sleep %>%
+summarize(count=n())
+
+numoutliers
+```
+
+```{r fullcount_alcohol}
+fullcount
+```
+
+##2.6 Hourwend
+
+Hourwend (m=`8`, sd=`1.33`, n=`269`) is represented by a continoius variable in the sleep dataset which was obtained from the sleep  questionnaire. It conists of number of hour slept by the respondent each weekend.Number of hour slept by the respondent each weekend in the dataset ranges from  4 to 14. Hourwend is the the predictor varaible in the  data set. Histogram of hourwend has been presented and decriptive statistics has been presented. Normality analysis has been also presented with finding the skew and kutosis. The main motive of the paper is to find the factors affecting satisfaction of sleep, hour slept by the respondent each weekend comes as a factor of satisfaction of sleep.
+
+
+###Code for inspecting the variable
+
+```{r}
+#Descriptive statisics
+stat.desc(sleep$hourwend, basic=F)
+sum(!is.na(sleep$hourwend))
+```
+```{r}
+#Histogram
+hist(sleep$hourwend, main="Figure: Histogram of hourwend")
+```
+
+```{r}
+#tables for satsleep
+table(sleep$hourwend)
+ 
+```
+
+```{r}
+#skewness and kurtosis from semTools with standard error 
+tpskew<-semTools::skew(sleep$hourwend)
+tpkurt<-semTools::kurtosis(sleep$hourwend)
+#Skew statistic
+tpskew[1]
+
+
+```
+```{r}
+tpkurt[2]
+```
+
+
+```{r}
+#Use dplyr filter to filter out the rows with a standardised value outsude the range
+outliers <- sleep %>% 
+  filter(scale(sleep$caffeine) >3.29 | scale(sleep$caffeine) < -3.29)
+
+#count them using dplyr summarize
+numoutliers<-outliers %>%
+summarize(count=n())
+fullcount<-sleep %>%
+summarize(count=n())
+
+numoutliers
+```
+
+```{r}
+fullcount
+```
+
+###Report of normality analysis
+Inspection of the histogram and normality plot shows that the distribution does not conform for a normal distribution. Inspection of standardized normal scores for skewness and kurtosis indicated that the skewness and kurtosis fall with an acceptable range of +/-3, (skewness of `0.09` SE=`0.14`, the kurtosis of `2.42` SE=`2.98`. Further inspection of the variable, showed that the varaible tend to attain normality.Therefore, it treated as a normal within this analysis (m=`8`, sd=`1.33`, n=`269`).
+
+
+```{r}
+#Create the histogram
+#Adjusting theme so that all plot titles after this will be centred and in bold
+theme_update(plot.title = element_text(hjust = 0.5, face="bold"))
+gg <- ggplot(sleep, aes(x=sleep$hourwend))
+
+#Change the label of the x axis
+gg <- gg + labs(x="No of hours of sleep in weekend")
+#manage binwidth and colours
+gg <- gg + geom_histogram(binwidth=2, colour="black", aes(y=..density.., fill=..count..))
+gg <- gg + scale_fill_gradient("Count", low="#DCDCDC", high="#7C7C7C")
+#adding a normal curve
+#use stat_function to compute a normalised score for each value of hourwend
+#pass the mean and standard deviation
+#use the na.rm parameter to say how missing values are handled
+gg <- gg + stat_function(fun=dnorm, color="red",args=list(mean=mean(sleep$hourwend, na.rm=TRUE), sd=sd(sleep$hourwend, na.rm=TRUE)))
+
+gg<-gg+ggtitle("Figure: Distribution of hours of sleep weekend")
+#to display the graph request the contents of the variable be shown
+gg
+
+```
+
+
+##2.7 Hourwnit
+
+Hourwend (m=`6.97`, sd=`1.067`, n=`270`) is represented by a continoius variable in the sleep dataset which was obtained from the sleep  questionnaire. It conists of number of hour slept by the respondent each weekend.Number of hour slept by the respondent each weekend in the dataset ranges from  3 to 10. Hourwend is the the predictor varaible in the  data set. Histogram of hourwend has been presented and decriptive statistics has been presented. Normality analysis has been also presented with finding the skew and kutosis. The main motive of the paper is to find the factors affecting satisfaction of sleep, hour slept by the respondent each weekend comes as a factor of satisfaction of sleep.
+
+
+###Code for inspecting the variable
+
+```{r}
+#Descriptive statisics
+stat.desc(sleep$hourwnit, basic=F)
+sum(!is.na(sleep$hourwnit))
+```
+```{r}
+#Histogram
+hist(sleep$hourwnit, main="Figure: Histogram of hour sleep in week night")
+```
+
+```{r}
+#table
+table(sleep$hourwnit)
+ 
+```
+
+```{r}
+#skewness and kurtosis from semTools with standard error 
+tpskew<-semTools::skew(sleep$hourwnit)
+tpkurt<-semTools::kurtosis(sleep$hourwnit)
+#We divide the skew statistic by the standard error to get the standardised score
+tpskew[1]
+```
+```{r}
+tpkurt[2]
+```
+
+
+```{r}
+#Use dplyr filter to filter out the rows with a standardised value outsude the range
+outliers <- sleep %>% 
+  filter(scale(sleep$hourwnit) >3.29 | scale(sleep$hourwnit) < -3.29)
+
+#count them using dplyr summarize
+numoutliers<-outliers %>%
+summarize(count=n())
+fullcount<-sleep %>%
+summarize(count=n())
+
+numoutliers
+```
+
+```{r}
+fullcount
+```
+
+###Report of normality analysis
+Inspection of the histogram and normality plot shows that the distribution does not conform for a normal distribution. Inspection of standardized normal scores for skewness and kurtosis indicated that the skewness and kurtosis fall with an acceptable range of +/-3, (skewness of `0.40` SE=`0.14`, the kurtosis of `0.68` SE=`0.29`. Further inspection of the variable, showed that the varaible tend to attain normality.Therefore, it treated as a normal within this analysis (m=`6.97`, sd=`1.067`, n=`270`).
+
+
+```{r}
+#Create the histogram
+#Adjusting theme so that all plot titles after this will be centred and in bold
+theme_update(plot.title = element_text(hjust = 0.5, face="bold"))
+gg <- ggplot(sleep, aes(x=sleep$hourwnit))
+
+#Change the label of the x axis
+gg <- gg + labs(x="No of hours of sleep in weeknight")
+#manage binwidth and colours
+gg <- gg + geom_histogram(binwidth=2, colour="black", aes(y=..density.., fill=..count..))
+gg <- gg + scale_fill_gradient("Count", low="#DCDCDC", high="#7C7C7C")
+#adding a normal curve
+#use stat_function to compute a normalised score for each value of hourwend
+#pass the mean and standard deviation
+#use the na.rm parameter to say how missing values are handled
+gg <- gg + stat_function(fun=dnorm, color="red",args=list(mean=mean(sleep$hourwnit, na.rm=TRUE), sd=sd(sleep$hourwnit, na.rm=TRUE)))
+
+gg<-gg+ggtitle("Figure: Distribution of hours of sleep week night")
+#to display the graph request the contents of the variable be shown
+gg
+
+```
+
+
+##2.8 Qualsleeprec
+Qualsleeprec (m=`2.70`, sd=`0.99`, n=`268`) is represented by a nominal variable in the sleep dataset which was obtained from the sleep  questionnaire. Qualsleeprec is the record of quality of sleep by individual respondent. It conists of  6 otions (1=very poor, 2=poor, 3=fair, 4=good,5=very good, 6=excellent). Qualslp is a nomianal varaible, so, its is a predictor varaible in the  paper. Histogram of qualsleeprec has been presented and decriptive statistics has been presented. The main motive of the paper is to find the factors affecting satisfaction of sleep, therefore qualsleeprec has been introduced in the logistic regression model.
+
+```{r}
+#Descriptive statisics
+stat.desc(sleep$qualsleeprec , basic=F)
+sum(!is.na(sleep$qualsleeprec))
+```
+
+```{r}
+hist(sleep$qualsleeprec, main ="Figure: Histogram of qualsleeprec" )
+```
+
+
+
+
+#3. RESULTS
+
+##3.1 Hypothesis 1
+H0 : There is a no correlation between Quality of sleep and satisfaction of sleep of individual.
+H1 : There is a correlation between Quality of sleep and satisfaction of sleep of individual.
+```{r}
+#Kendal Correlation
+stats::cor.test(sleep$satsleep, sleep$qualslp,  method='pearson')
+```
+
+The relationship between Satisfaction in sleep and Quality of sleep (derived from the sleep questionnaire)  was investigated using a Pearson correlation. A strong positive correlation was found (r =.576,  p<.001).  The correlatio test provided evidence to reject the null hypothesis, that there is no relationship between the Satisfaction of sleep and Quality of sleep.P-value < 2.2e-16, shows there is a statistical significance and coorelation between satisfaction of sleep and quality of sleep.The p-value tells us that the probability of this correlation being due to random chance is very low (close to zero in fact). Hence, this relationship is genuine. Therefore, qualslp is suitable for the logistic regression model predicting the satisfaction of sleep.
+
+
+
+##3.2 Hypothesis 2
+H0 :There is no correlation between satisfaction of sleep and fitrate for respondents.
+H1 :There is correlation between satisfaction of sleep and fitrate for respondents.
+
+```{r}
+#kendall correlation
+stats::cor.test(sleep$satsleep, sleep$fitrate,  method='kendal')
+
+```
+
+The relationship between Satisfaction in sleep and fitrate (derived from the sleep questionnaire)  was investigated using a Kendal correlation. Statistics from this hypothesis testing generated are (r =0.33,  p = 0.47). After conducting the test, we got z = '0.71', n='261'. The probability is higher than the conventional 5%, the correlation coefficient will be called statistically insignificant. There is a evidence to retain the null hypothesis.  The P-value > 0.05, shows there is a no statistically significant corelation between the respondents with satisfaction in sleep and fitrate. Therefore, fitrate is not suitable for the logistic regression model predicting satisfaction of sleep. 
+
+##3.3 Hypothesis 3
+
+H0 :There is no correlation between in satisfaction of sleep and healthrate for respondents.
+H1 :There is correlation between in satisfaction of sleep and healthrate for respondents.
+
+```{r }
+#kendal correlation
+stats::cor.test(sleep$satsleep, sleep$healthrate,  method='kendal')
+
+```
+
+The statistical relationship between Satisfaction in sleep and healthrate (derived from the sleep questionnaire)  was investigated using a Kendall correlation, as both are ordinal varaibles. After conducting the test, following scores were observed z = '1.79', n='261', p= 0.07. The probability is higher than the conventional 5%, the correlation coefficient will be called statistically insignificant. Thefore, there is no evidence to accept the alternative hypothesis and retain the null hypothesis. The P-value > 0.05, shows there is a no statistically significant correlation between the both. Therefore, healthrate is not suitable for the logistic regression model predicting the satisfaction of sleep. 
+
+
+##3.4 Hypothesis 4
+H0:There is no correlation between satisfaction of sleep and caffeine.
+H1:There is correlation between satisfaction of sleep and caffeine.
+
+```{r }
+#Pearson correlation
+stats::cor.test(sleep$satsleep, sleep$caffeine ,  method='pearson')
+
+```
+
+The statistical relationship between Satisfaction in sleep and caffeine (derived from the sleep questionnaire)  was investigated using a pearson correlation. After conducting the test, following scores were observed r = '-0.081', n='257', p= 0.18. The probability is higher than the conventional 5%, the correlation coefficient will be called statistically insignificant. Thefore, there is no evidence to accept the alternative hypothesis and therefore the null hypothesis is retained. The P-value > 0.05, shows there is a no statistically significant correlation between the both. Therefore, caffeine is not suitable for the logistic regression model predicting the satisfaction of sleep. 
+
+
+##3.5 Hypothesis 5
+
+H0: There is no correlation between satisfaction of sleep and hours of sleep during week night.
+H1: There is correlation between satisfaction of sleep and hours of sleep during week night.
+
+```{r }
+#Pearson correlation
+stats::cor.test(sleep$satsleep, sleep$hourwnit,  method='pearson')
+
+```
+
+The relationship between Satisfaction in sleep and hours of sleep during week night (derived from the sleep questionnaire)  was investigated using a Pearson correlation.   A strong positive correlation was found (r =.376,  p = 2.011e-10).  The correlatio test provided evidence to reject the null hypothesis, that there is no relationship between the Satisfaction of sleep and Quality of sleep and accept the alternate hypothesis. P-value = 2.011e-10, shows there is a statistical significance and coorelation between satisfaction of sleep and hourwnit.The p-value tells us that the probability of this correlation being due to random chance is very low (close to zero in fact). Hence, this relationship is genuine. Therefore, hourwnit is suitable for the logistic regression model predicting the satisfaction of sleep.
+
+
+##3.7 Hypothesis 6
+
+H0: There is no correlation between satisfaction of sleep and hours of sleep during week end.
+H1: There is correlation between satisfaction of sleep and hours of sleep during week end.
+
+```{r }
+#Pearson correlation
+stats::cor.test(sleep$satsleep, sleep$hourwend,  method='pearson')
+
+```
+
+The relationship between Satisfaction in sleep and hours of sleep during week end (derived from the sleep questionnaire)  was investigated using a Pearson correlation.   A positive correlation was found (r =.26,  p = 1.645e-05).  The correlation test provided evidence to reject the null hypothesis, that there is no relationship between the Satisfaction of sleep and Quality of sleep and accept the alternate hypothesis.The P-value = 1.645e-05, shows there is a statistical significance and coorelation between satisfaction of sleep and hourwnit.The p-value tells us that the probability of this correlation being due to random chance is very low (close to zero in fact). Hence, this relationship is genuine. Therefore, hourwend is suitable for the logistic regression model predicting the satisfaction of sleep.
+
+#4. Regression Model
+
+##Data cleaning
+The dataset had many NA or missing varaibles, which are properly handeled by omitting the rows with the NA or missing varaibles. As, the varaible under consideration were ordinal data. 
+```{r}
+#Data cleaning
+sum(is.na(sleep$satsleep))
+
+
+myvars <- c("satsleep", "qualslp", "hourwnit", "hourwend","qualsleeprec")
+sleep1 <-na.omit(sleep[myvars])
+
+sum(is.na(ydata))
+
+```
+
+
+##Data Slicing
+The data has been sliced in 75% train data (199 records) and 25% test data(67 records) of the sleep dataset for proceding in the regression model.The satsleep has been taken as a factor as the model, not to condsider it as numeric varaible. Seed has been set to 123 as a random varaible as a parameter of data slicing.
+
+```{R}
+#Taking satsleep as factor
+sleep1$satsleep<-as.factor(sleep1$satsleep)
+
+#Data Slicing
+smp_size <- floor(0.75 * nrow(sleep1))
+
+
+set.seed(123)
+train_ind <- sample(seq_len(nrow(sleep1)), size = smp_size)
+
+train <- sleep1[train_ind, ]
+test <- sleep1[-train_ind, ]
+
+
+```
+
+
+##4.1 Model 1
+A ordinal linear regression was calculated to predict a satisfaction of sleep based on the ordinal variables hour sleep weeknight, hour sleep weekend. A significant regression equation was found with Residual Deviance: 843.17 and AIC: 865.17. Satisfaction of sleep is equal to 0.152(hourwnit) + 0.99(hourwend).By observation of p-values,  hourwend(p<0.01) and hourwnit (p< 0.05) were significant predictors of satisfaction of sleep. The ordinal linear regression model has Pr(chisq)<2.2e-16 and chisq = 105.59 when undergone a likelihood ratio test. The coefficients for the model are given by hourwnit = 1.830,and hourwend = 1.103. 
+
+The predicted values have been computed on the test data set and confusion matrix has been formed with an accuracy of 11.94%. As the outcome variable satsleep is the ordinal variable, the statistics by class has been presented in the paper.
+
+```{r}
+logmodel<-polr(satsleep~+hourwnit+hourwend, data = train )
+
+#Summary of the model with co-efficients
+
+stargazer(logmodel, type="text")
+
+#Full summary of the model
+summary(logmodel)
+
+#Chi-square plus significance
+lmtest::lrtest(logmodel)
+
+#Exponentiate the co-efficients
+exp(coefficients(logmodel))
+
+predictions<- predict(logmodel ,test)
+test<- cbind(test,predictions)
+
+confusionMatrix_logreg<- confusionMatrix(test$satsleep,test$predictions)
+confusionMatrix_logreg
+
+```
+
+
+##4.1 Model 2
+A ordinal linear regression was calculated to predict a satisfaction of sleep based on the ordinal varaibles qualiity of sleep, hour sleep week night, hour sleep week end. A significant regression equation was found with Residual Deviance: 768.9973 and AIC: 792.9973. Satisfaction of sleep is equal to 0.146(qualslp) + 0.147(hourwnit) + 0.118(hourwend).By observation of p-values, Qualslp (p< 0.1), hourwend(p<0.01) and hourwnit (p< 0.05) were significant predictors of satisfaction of sleep. The ordinal linear regression model has Pr(chisq)<2.2e-16 and chisq = 105.59 when undergone likelyhood ratio test. The coeffients for the model are given by qualsp = 3.21, hourwnit = 1.7682498,and hourwend = 0.886. 
+
+The predicted values have been computed on the test data set and confuson matrix has been formed with accuracy of 20.9%. As the outcome varaible satsleep is orinal varaible, the statistics by class has been presented in the paper.
+
+```{r}
+logmodel1<-polr(satsleep~qualslp+hourwnit+hourwend, data = train )
+
+#Summary of the model with co-efficients
+
+stargazer(logmodel1, type="text")
+
+#Full summary of the model
+summary(logmodel1)
+
+#Chi-square plus significance
+lmtest::lrtest(logmodel1)
+
+#Exponentiate the co-efficients
+exp(coefficients(logmodel1))
+
+predictions1<- predict(logmodel1 ,test)
+test<- cbind(test,predictions1)
+
+confusionMatrix_logreg<- confusionMatrix(test$satsleep,test$predictions1)
+confusionMatrix_logreg
+
+```
+
+
+
+##4.3 Model 3
+A ordinal linear regression was calculated to predict a satisfaction of sleep based on the ordinal variables quality of sleep, hour sleep weeknight, hour sleep weekend and nominal variable qualsleeprec. A significant regression equation was found with Residual Deviance: 760.043 and AIC: 786.043.By interpretation of model, Satisfaction of sleep is equal to 0.601(qualslp) + 0.156(hourwnit) + 0.133(hourwend) + 0.66(qualsleeprec) .By observation of p-values, Qualslp (p< 0.1), hourwend(p<0.01) and hourwnit (p< 0.05) were significant predictors of satisfaction of sleep. The ordinal linear regression model has Pr(chisq)<2.2e-16 and chisq = 115.59 when undergone a likelihood ratio test. The coefficients for the model are given by qualsp = 2.36, hourwnit = 1.73,and hourwend = 0.94, qualsleeprec = 1.64. 
+
+The predicted values have been computed on the test data set by the model and confusion matrix has been formed with an accuracy of 20.9%. As the outcome variable satsleep is the ordinal variable, the model statistics by class has been presented in the paper.
+
+```{r}
+logmodel2<-polr(satsleep~qualslp+hourwnit+hourwend+qualsleeprec, data = train)
+
+#Summary of the model with co-efficients
+stargazer(logmodel2, type="text")
+
+#Full summary of the model
+summary(logmodel2)
+
+#Chi-square plus significance
+lmtest::lrtest(logmodel2)
+
+
+#Exponentiate the co-efficients
+exp(coefficients(logmodel2))
+
+
+
+predictions2<- predict(logmodel2 ,test)
+test<- cbind(test,predictions2)
+
+confusionMatrix_logreg<- confusionMatrix(test$satsleep,test$predictions2)
+confusionMatrix_logreg
+
+```
+
+#5. Model Comparision
+The likelihood ratio test of ordinal regression models with satsleep as response varaible conveys that the first ordinal logistic model has residual deviance = '843.1702', df = '188'.  Second ordinal logistic model, has residual deviance = '760.5940', df = '187'.  Third ordinal logistic model has residual deviance = '760.0430', df = '186'.The likelyhood ratio of first and second model is given by 82.5761 and second and third model is given by 0.5510.    
+
+```{r}
+#Summary of the model with co-efficients
+
+anova(logmodel,logmodel1,logmodel2 ,test="Chisq")
+
+```
+
+
